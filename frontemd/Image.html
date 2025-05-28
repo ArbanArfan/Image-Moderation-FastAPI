@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Moderation API</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus, input[type="file"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            margin-top: 0.5rem;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .status {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            font-weight: 600;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .results {
+            grid-column: 1 / -1;
+            margin-top: 2rem;
+        }
+
+        .moderation-result {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .safety-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            margin-right: 1rem;
+        }
+
+        .safety-badge.safe {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .safety-badge.unsafe {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .risk-score {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .category {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .category.detected {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+
+        .category-name {
+            font-weight: 600;
+            text-transform: capitalize;
+            margin-bottom: 0.5rem;
+        }
+
+        .confidence-bar {
+            background: #e9ecef;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #ffc107, #dc3545);
+            transition: width 0.5s ease;
+        }
+
+        .tokens-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .token-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .token-info {
+            flex-grow: 1;
+        }
+
+        .token-text {
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: #666;
+            word-break: break-all;
+        }
+
+        .admin-badge {
+            background: #ffc107;
+            color: #856404;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Image Moderation API</h1>
+            <p>Advanced AI-powered content safety for your applications</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Authentication Section -->
+            <div class="card">
+                <h2>🔐 Authentication</h2>
+                <div class="form-group">
+                    <label for="tokenInput">Bearer Token:</label>
+                    <input type="text" id="tokenInput" placeholder="Enter your bearer token">
+                </div>
+                <button class="btn" onclick="testToken()">Verify Token</button>
+                <button class="btn btn-secondary" onclick="generateToken()">Generate New Token</button>
+                
+                <div id="authStatus"></div>
+                
+                <!-- Admin Section -->
+                <div id="adminSection" class="hidden">
+                    <h3 style="margin: 2rem 0 1rem 0; color: #667eea;">Token Management</h3>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="isAdminCheck"> Admin Token
+                        </label>
+                    </div>
+                    <button class="btn" onclick="createToken()">Create Token</button>
+                    <button class="btn btn-secondary" onclick="listTokens()">List All Tokens</button>
+                    
+                    <div id="tokensList"></div>
+                </div>
+            </div>
+
+            <!-- Image Upload Section -->
+            <div class="card">
+                <h2>📸 Image Moderation</h2>
+                <div class="form-group">
+                    <label for="imageInput">Select Image:</label>
+                    <input type="file" id="imageInput" accept="image/*">
+                </div>
+                <button class="btn" onclick="moderateImage()">Analyze Image</button>
+                
+                <div id="uploadStatus"></div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsSection" class="results hidden">
+            <div class="moderation-result">
+                <div class="result-header">
+                    <div id="safetyBadge" class="safety-badge"></div>
+                    <div class="risk-score">Risk Score: <span id="riskScore"></span></div>
+                </div>
+                
+                <div class="categories" id="categoriesContainer"></div>
+                
+                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e9ecef; font-size: 0.9rem; color: #666;">
+                    <strong>Processing Time:</strong> <span id="processingTime"></span>ms |
+                    <strong>Image Hash:</strong> <span id="imageHash" style="font-family: monospace;"></span> |
+                    <strong>Analyzed:</strong> <span id="analyzedAt"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        let currentToken = '';
+        let isAdmin = false;
+
+        // Get current token from input
+        function getCurrentToken() {
+            return document.getElementById('tokenInput').value.trim();
+        }
+
+        // Show status message
+        function showStatus(elementId, message, type = 'success') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        // Test token validity
+        async function testToken() {
+            const token = getCurrentToken();
+            if (!token) {
+                showStatus('authStatus', 'Please enter a token', 'error');
+                return;
+            }
+            
+            try {
+                //alert('Token is valid! You can now use the API. ' + token);
+                const response = await fetch(`${API_BASE}/health`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    currentToken = token;
+                    showStatus('authStatus', '✅ Token is valid!', 'success');
+                    
+                    // Check if admin token
+                    try {
+                        const adminResponse = await fetch(`${API_BASE}/auth/tokens`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        
+                        if (adminResponse.ok) {
+                            isAdmin = true;
+                            document.getElementById('adminSection').classList.remove('hidden');
+                            showStatus('authStatus', '✅ Valid admin token!', 'success');
+                        }
+                    } catch (e) {
+                        // Not admin, that's fine
+                        showStatus('authStatus', '❌ Invalid token', 'error');
+                    }
+                } else {
+                    showStatus('authStatus', '❌ Invalid token', 'error');
+                }
+            } catch (error) {
+                showStatus('authStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Generate new token (admin only)
+        async function generateToken() {
+            showStatus('authStatus', 'This feature requires admin access. Use the Create Token button if you have admin privileges.', 'warning');
+        }
+
+        // Create new token
+        async function createToken() {
+            const token = getCurrentToken();
+            const isAdminToken = document.getElementById('isAdminCheck').checked;
+            
+            if (!token) {
+                showStatus('authStatus', 'Please enter your admin token first', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/tokens`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        is_admin: isAdminToken
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showStatus('authStatus', 
+                        `✅ New ${isAdminToken ? 'admin' : 'regular'} token created: <br><code style="font-family: monospace; background: #f8f9fa; padding: 4px; border-radius: 4px;">${data.token}</code>`, 
+                        'success'
+                    );
+                } else {
+                    const error = await response.json();
+                    showStatus('authStatus', `❌ Failed to create token: ${error.detail}`, 'error');
+                }
+            } catch (error) {
+                showStatus('authStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        // List all tokens
+        async function listTokens() {
+            const token = getCurrentToken();
+            
+            if (!token) {
+                showStatus('authStatus', 'Please enter your admin token first', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/tokens`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const tokens = await response.json();
+                    let html = '<h4 style="margin: 1rem 0;">All Tokens:</h4><div class="tokens-list">';
+                    
+                    tokens.forEach(tokenData => {
+                        html += `
+                            <div class="token-item">
+                                <div class="token-info">
+                                    <div class="token-text">${tokenData.token}</div>
+                                    <small>Created: ${new Date(tokenData.createdAt).toLocaleString()} | Usage: ${tokenData.usageCount || 0}</small>
+                                    ${tokenData.isAdmin ? '<span class="admin-badge">ADMIN</span>' : ''}
+                                </div>
+                                <button class="btn btn-danger" style="width: auto; padding: 0.5rem 1rem;" onclick="deleteToken('${tokenData.token}')">Delete</button>
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div>';
+                    document.getElementById('tokensList').innerHTML = html;
+                } else {
+                    const error = await response.json();
+                    showStatus('authStatus', `❌ Failed to list tokens: ${error.detail}`, 'error');
+                }
+            } catch (error) {
+                showStatus('authStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Delete token
+        async function deleteToken(tokenToDelete) {
+            const token = getCurrentToken();
+            
+            if (!confirm('Are you sure you want to delete this token?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/tokens/${tokenToDelete}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    showStatus('authStatus', '✅ Token deleted successfully', 'success');
+                    listTokens(); // Refresh the list
+                } else {
+                    const error = await response.json();
+                    showStatus('authStatus', `❌ Failed to delete token: ${error.detail}`, 'error');
+                }
+            } catch (error) {
+                showStatus('authStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Moderate image
+        async function moderateImage() {
+            const token = getCurrentToken();
+            const fileInput = document.getElementById('imageInput');
+            
+            if (!token) {
+                showStatus('uploadStatus', 'Please enter a valid token first', 'error');
+                return;
+            }
+
+            if (!fileInput.files[0]) {
+                showStatus('uploadStatus', 'Please select an image file', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            showStatus('uploadStatus', '<div class="loading"></div>Analyzing image...', 'warning');
+
+            try {
+                const response = await fetch(`${API_BASE}/moderate`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    displayModerationResult(result);
+                    showStatus('uploadStatus', '✅ Image analyzed successfully!', 'success');
+                } else {
+                    const error = await response.json();
+                    showStatus('uploadStatus', `❌ Analysis failed: ${error.detail}`, 'error');
+                }
+            } catch (error) {
+                showStatus('uploadStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Display moderation results
+        function displayModerationResult(result) {
+            document.getElementById('resultsSection').classList.remove('hidden');
+            
+            // Safety badge
+            const safetyBadge = document.getElementById('safetyBadge');
+            safetyBadge.textContent = result.is_safe ? 'SAFE' : 'UNSAFE';
+            safetyBadge.className = `safety-badge ${result.is_safe ? 'safe' : 'unsafe'}`;
+            
+            // Risk score
+            document.getElementById('riskScore').textContent = (result.risk_score * 100).toFixed(1) + '%';
+            
+            // Categories
+            const container = document.getElementById('categoriesContainer');
+            container.innerHTML = '';
+            
+            result.categories.forEach(category => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = `category ${category.detected ? 'detected' : ''}`;
+                
+                categoryDiv.innerHTML = `
+                    <div class="category-name">${category.name.replace('_', ' ')}</div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: ${category.confidence * 100}%"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: #666;">
+                        <span>Confidence: ${(category.confidence * 100).toFixed(1)}%</span>
+                        <span>${category.detected ? '⚠️ Detected' : '✅ Clear'}</span>
+                    </div>
+                `;
+                
+                container.appendChild(categoryDiv);
+            });
+            
+            // Metadata
+            document.getElementById('processingTime').textContent = result.processing_time_ms;
+            document.getElementById('imageHash').textContent = result.image_hash.substring(0, 16) + '...';
+            document.getElementById('analyzedAt').textContent = new Date(result.analyzed_at).toLocaleString();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-test token if provided in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            if (token) {
+                document.getElementById('tokenInput').value = token;
+                testToken();
+            }
+        });
+    </script>
+</body>
+</html>
