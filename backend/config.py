@@ -1,22 +1,25 @@
 # config.py
 from pydantic_settings import BaseSettings
 from typing import Optional
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
 class Settings(BaseSettings):
     """Application configuration settings"""
     
     # Database settings
-    MONGODB_URL: str = "mongodb+srv://arbanarfan1:isln0boMWmJlxG60@image-moderationv2.wvgqfk6.mongodb.net/?retryWrites=true&w=majority&appName=Image-ModerationV2"
-    DATABASE_NAME: str = "image_moderation"
+    MONGODB_URL: str = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
+    DATABASE_NAME: str = os.getenv("DATABASE_NAME", "image_moderation")
     
     # API settings
-    PORT: int = 7000
-    HOST: str = "0.0.0.0"
-    DEBUG: bool = False
+    PORT: int = os.getenv("PORT", 7000)
+    HOST: str = os.getenv("HOST", "0.0.0.0")
+    DEBUG: bool = os.getenv("DEBUG", "False")
     
     # Security settings
-    SECRET_KEY: str = "your-secret-key-change-in-production"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    SECRET_KEY: str = os.getenv("SECRET_KEY")
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60)
     
     # Image processing settings
     MAX_IMAGE_SIZE_MB: int = 10

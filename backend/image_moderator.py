@@ -74,7 +74,7 @@ class ImageModerator:
             risk_score = self._calculate_risk_score(categories)
             
             # Determine if image is safe (threshold of 0.7)
-            is_safe = risk_score < 0.45
+            is_safe = risk_score < 0.6
             
             processing_time = int((time.time() - start_time) * 1000)
             
