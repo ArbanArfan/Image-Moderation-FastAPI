@@ -58,16 +58,15 @@ git https://github.com/ArbanArfan/Image-Moderation-FastAPI.git
 cd Image-Moderation-FastAPI
 
 ```ConfigureEnvironment
-Config.py
 cp .env.example .env
 
 Build and Run with Docker
 docker-compose up --build
 
-Once up:
+# Once up:
 
-Backend: http://localhost:7000
+# Backend: http://localhost:7000
 
-Frontend: http://localhost:8080
+# Frontend: http://localhost:8080
 
-Admin Token: m5AwYRHli3UGtdD6uT42YJiZ4koLk3c3jNcwt-3W3a8
+# Admin Token: m5AwYRHli3UGtdD6uT42YJiZ4koLk3c3jNcwt-3W3a8

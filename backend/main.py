@@ -16,7 +16,9 @@ from database import Database
 from models import TokenCreate, TokenResponse, ModerationResult, UsageRecord
 from image_moderator import ImageModerator
 from config import settings
+from rich.console import Console
 
+console = Console()
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -84,7 +86,6 @@ async def get_current_token(credentials: HTTPAuthorizationCredentials = Depends(
 async def get_admin_token(credentials: HTTPAuthorizationCredentials = Depends(security)) -> str:
     """Validate admin bearer token"""
     token = credentials.credentials
-    print("Credentials:", credentials)
     # Verify token exists and is admin
     token_doc = await db.get_token(token)
     if not token_doc or not token_doc.get("isAdmin", False):

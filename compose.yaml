@@ -1,0 +1,39 @@
+# docker-compose.yml
+
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "7000:7000"
+    environment:
+      - MONGODB_URL=${MONGODB_URL:-mongodb://mongodb:27017/image_moderation}
+      - DATABASE_NAME=${DATABASE_NAME:-image_moderation}
+      - DEBUG=false
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - image-moderation-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - image-moderation-network
+
+networks:
+  image-moderation-network:
+    driver: bridge
