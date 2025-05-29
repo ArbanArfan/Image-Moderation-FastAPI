@@ -1,0 +1,106 @@
+
+---
+
+## 📄 Documentation Report
+
+### 1. **Overview**
+
+This project implements an end-to-end system for image content moderation. It enables API-based moderation, secure token management, and usage analytics through a modern FastAPI architecture and MongoDB.
+
+---
+
+### 2. **Architecture**
+
+#### Components:
+- **FastAPI Server**: Exposes endpoints for image moderation and token management.
+- **MongoDB**: Stores tokens and API usage.
+- **ImageModerator Class**: Simulates harmful content detection using mock logic.
+- **Frontend**: Minimal HTML/JS form that interfaces with the moderation API.
+
+---
+
+### 3. **Authentication & Authorization**
+
+- **Token Format**: Bearer tokens (random 32-character URL-safe string)
+- **Storage**: MongoDB `tokens` collection
+- **Access Control**:
+  - Admins (`isAdmin=true`) can create/delete/list tokens
+  - Regular tokens can only access moderation and usage stats
+
+---
+
+### 4. **Image Moderation Logic**
+
+**Key Categories**:
+- Violence
+- Nudity
+- Hate Symbols
+- Self-harm
+- Extremist Content
+- Illegal Drugs
+- Weapons
+- Harassment
+
+**Mock Heuristics**:
+- Brightness, color variance
+- Skin tone detection (basic)
+- Randomized category confidence
+- Detection threshold: > 0.5
+- Image is unsafe if risk score > 0.6
+
+---
+
+### 5. **Usage Tracking**
+
+Each request:
+- Is logged in the `usages` collection
+- Tracks:
+  - Endpoint
+  - Timestamp
+  - Token
+  - Metadata (file type, hash, size)
+
+---
+
+### 6. **Dockerization**
+
+- **Backend**: Runs via `uvicorn main:app`
+- **Ports**: `7000` (FastAPI), `8080` (Frontend)
+- `docker-compose.yml` manages multi-container setup
+
+---
+
+### 7. **Security**
+
+- No hardcoded secrets (uses `.env`)
+- CORS enabled with restrictions (can be configured)
+- Admin token created on first startup
+
+---
+
+### 8. **Frontend UI**
+
+- `/frontend/index.html`
+- Token input
+- Image file selection
+- JSON response visualization
+
+---
+
+### 9. **Known Limitations**
+
+- Mock moderation, not production-grade ML
+- No rate limiting or token expiration
+- No HTTPS in dev environment
+
+---
+
+### 10. **Future Enhancements**
+
+- Integrate with actual image analysis APIs (AWS Rekognition, Google Vision)
+- Add token expiration and rate-limiting
+- Improve frontend UI with React/Vue
+- Upload history dashboard per token
+
+---
+
